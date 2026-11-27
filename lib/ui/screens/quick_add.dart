@@ -8,11 +8,22 @@ import '../../core/tokens.dart';
 import '../../data/models.dart';
 import '../../state/app_state.dart';
 import '../dialogs.dart';
+import '../motion.dart';
 import '../widgets.dart';
+
+/// লেনদেনে চাপ দিলে: বদলানো/মোছার স্ক্রিন। দেনা/পাওনা/ডিপিএস থেকে আসা গুলো এখানে বদলানো যাবে না।
+void openTxEditor(BuildContext context, Tx tx) {
+  if (!tx.isManual) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t('delete_locked'))));
+    return;
+  }
+  Navigator.of(context).push(fadeRoute(QuickAddScreen(edit: tx), fullscreenDialog: true));
+}
 
 /// নতুন লেনদেন: আয় / খরচ — ১০-১৫ সেকেন্ডে হিসাব লেখার স্ক্রিন
 class QuickAddScreen extends StatefulWidget {
-  const QuickAddScreen({super.key});
+  const QuickAddScreen({super.key, this.edit});
+  final Tx? edit; // null = নতুন, না হলে বদলানো
 
   @override
   State<QuickAddScreen> createState() => _QuickAddScreenState();
@@ -26,10 +37,41 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
   List<Category> _cats = [];
   int? _selectedId;
 
+  bool get _editing => widget.edit != null;
+
   @override
   void initState() {
     super.initState();
+    final e = widget.edit;
+    if (e != null) {
+      _type = e.type;
+      final whole = e.amountPaisa % 100 == 0;
+      _amount.text = whole ? '${e.amountPaisa ~/ 100}' : (e.amountPaisa / 100).toStringAsFixed(2);
+      _note.text = e.note;
+      _date = e.date;
+      _selectedId = e.categoryId;
+    }
     _loadCats();
+  }
+
+  Future<void> _delete() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: dialogShape,
+        title: Text(t('delete_title'), style: Ty.s(18, FontWeight.w600)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t('cancel'), style: Ty.s(15, FontWeight.w600, color: C.ink600))),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(t('delete'), style: Ty.s(15, FontWeight.w600, color: C.expense))),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    final nav = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    await context.read<AppState>().deleteTransaction(widget.edit!.id);
+    nav.pop();
+    messenger.showSnackBar(SnackBar(content: Text(t('deleted'))));
   }
 
   @override
@@ -125,9 +167,15 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
       return;
     }
     final nav = Navigator.of(context);
-    await context.read<AppState>().addTransaction(type: _type, amountPaisa: paisa, categoryId: cat.id, date: _date, note: _note.text);
+    final state = context.read<AppState>();
+    HapticFeedback.lightImpact();
+    if (_editing) {
+      await state.updateTransaction(id: widget.edit!.id, type: _type, amountPaisa: paisa, categoryId: cat.id, date: _date, note: _note.text);
+    } else {
+      await state.addTransaction(type: _type, amountPaisa: paisa, categoryId: cat.id, date: _date, note: _note.text);
+    }
     nav.pop();
-    messenger.showSnackBar(SnackBar(content: Text(t('saved'))));
+    messenger.showSnackBar(SnackBar(content: Text(_editing ? t('updated') : t('saved'))));
   }
 
   @override
@@ -143,9 +191,22 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
               children: [
                 Row(children: [
-                  RoundIconButton(icon: Icons.chevron_left_rounded, onTap: () => Navigator.pop(context)),
-                  Expanded(child: Center(child: Text(t('new_txn'), style: Ty.s(19, FontWeight.w600)))),
-                  const SizedBox(width: 40),
+                  RoundIconButton(icon: 'left', onTap: () => Navigator.pop(context)),
+                  Expanded(child: Center(child: Text(_editing ? t('edit_txn') : t('new_txn'), style: Ty.s(19, FontWeight.w600)))),
+                  if (_editing)
+                    Pressable(
+                      onTap: _delete,
+                      scale: 0.88,
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(color: C.red100, shape: BoxShape.circle),
+                        child: const Icon(Icons.delete_outline_rounded, size: 20, color: C.expense),
+                      ),
+                    )
+                  else
+                    const SizedBox(width: 40),
                 ]),
                 const SizedBox(height: 12),
                 _TypeToggle(type: _type, onChanged: _setType),
@@ -162,7 +223,7 @@ class _QuickAddScreenState extends State<QuickAddScreen> {
                           constraints: const BoxConstraints(minWidth: 48, maxWidth: 230),
                           child: TextField(
                             controller: _amount,
-                            autofocus: true,
+                            autofocus: !_editing,
                             keyboardType: const TextInputType.numberWithOptions(decimal: true),
                             inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
                             style: Ty.s(44, FontWeight.w700),
@@ -256,7 +317,9 @@ class _TypeToggle extends StatelessWidget {
       return Expanded(
         child: GestureDetector(
           onTap: () => onChanged(v),
-          child: Container(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
             padding: const EdgeInsets.symmetric(vertical: 10),
             alignment: Alignment.center,
             decoration: BoxDecoration(color: on ? C.surface : Colors.transparent, borderRadius: BorderRadius.circular(R.full), boxShadow: on ? Shadows.card : null),

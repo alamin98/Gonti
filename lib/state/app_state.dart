@@ -8,8 +8,9 @@ import '../data/repository.dart';
 
 class AppState extends ChangeNotifier {
   AppState(this.repo, this.prefs) {
-    bangla = prefs.getBool('bangla') ?? true;
-    useBangla = bangla;
+    // English এখন বন্ধ (ডিজাইনে অপশন আছে, পরের ধাপে চালু হবে)
+    bangla = true;
+    useBangla = true;
     monthStartDay = prefs.getInt('month_start_day') ?? 1;
     budgetPaisa = prefs.getInt('budget_paisa') ?? 0;
     onboarded = prefs.getBool('onboarded') ?? false;
@@ -45,7 +46,7 @@ class AppState extends ChangeNotifier {
     period = periodFor(DateTime.now(), monthStartDay, offset: monthOffset);
     totals = await repo.totals(period.start, period.end);
     periodTx = await repo.txBetween(period.start, period.end);
-    recent = await repo.recent(5);
+    recent = await repo.txBetween(period.start, period.end, limit: 5);
     dena = await repo.debtOutstanding('dena');
     pawna = await repo.debtOutstanding('pawna');
     notifyListeners();
@@ -62,11 +63,15 @@ class AppState extends ChangeNotifier {
     await refresh();
   }
 
-  Future<void> setLanguage(bool bn) async {
+  /// English এখনো চালু হয়নি → false দিলে কিছু বদলায় না, false ফেরত দেয়।
+  static const englishReady = false;
+  Future<bool> setLanguage(bool bn) async {
+    if (!bn && !englishReady) return false;
     bangla = bn;
     useBangla = bn;
     await prefs.setBool('bangla', bn);
     notifyListeners();
+    return true;
   }
 
   Future<void> setMonthStartDay(int day) async {
@@ -96,6 +101,18 @@ class AppState extends ChangeNotifier {
     String note = '',
   }) async {
     await repo.addTx(type: type, amountPaisa: amountPaisa, categoryId: categoryId, date: date, note: note);
+    await refresh();
+  }
+
+  Future<void> updateTransaction({
+    required int id,
+    required TxType type,
+    required int amountPaisa,
+    required int categoryId,
+    required DateTime date,
+    String note = '',
+  }) async {
+    await repo.updateTx(id: id, type: type, amountPaisa: amountPaisa, categoryId: categoryId, date: date, note: note);
     await refresh();
   }
 

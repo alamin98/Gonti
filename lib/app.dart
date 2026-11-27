@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'core/theme.dart';
 import 'state/app_state.dart';
+import 'ui/motion.dart';
 import 'ui/screens/splash.dart';
 
 class GontiApp extends StatelessWidget {
@@ -22,6 +23,7 @@ class GontiApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      builder: (context, child) => DesignScale(child: child ?? const SizedBox()),
       home: const SplashScreen(),
     );
   }

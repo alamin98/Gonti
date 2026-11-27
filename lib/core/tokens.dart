@@ -6,6 +6,7 @@ class C {
   C._();
   // semantic (Light)
   static const bg = Color(0xFFF5F6FA);
+  static const onboardBg = Color(0xFFF2F2F7); // Figma: backgrounds/secondary
   static const surface = Color(0xFFFFFFFF);
   static const surfaceVariant = Color(0xFFEEF1F5);
   static const outline = Color(0xFFD5DAE1);
@@ -50,6 +51,7 @@ class C {
   static const white06 = Color(0x0FFFFFFF);
   static const white08 = Color(0x14FFFFFF);
   static const white16 = Color(0x29FFFFFF);
+  static const white80 = Color(0xCCFFFFFF);
   static const white85 = Color(0xD9FFFFFF);
 }
 

@@ -60,9 +60,11 @@ class SettingsScreen extends StatelessWidget {
             ListTile(
               title: Text(e.$2, style: Ty.s(16, FontWeight.w600)),
               trailing: state.bangla == e.$1 ? const Icon(Icons.check_rounded, color: C.primary) : null,
-              onTap: () {
-                state.setLanguage(e.$1);
+              onTap: () async {
+                final messenger = ScaffoldMessenger.of(context);
                 Navigator.pop(ctx);
+                final ok = await state.setLanguage(e.$1);
+                if (!ok) messenger.showSnackBar(SnackBar(content: Text(t('english_soon'))));
               },
             ),
           const SizedBox(height: 12),
@@ -80,7 +82,7 @@ class SettingsScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           children: [
             Row(children: [
-              RoundIconButton(icon: Icons.chevron_left_rounded, onTap: () => Navigator.pop(context)),
+              RoundIconButton(icon: 'left', onTap: () => Navigator.pop(context)),
               Expanded(child: Center(child: Text(t('settings'), style: Ty.s(19, FontWeight.w600)))),
               const SizedBox(width: 40),
             ]),

@@ -59,6 +59,22 @@ class Repo {
         'source_id': sourceId,
       });
 
+  /// শুধু manual লেনদেন বদলানো যায় (দেনা/পাওনা/ডিপিএস থেকে আসা গুলো মডিউল থেকে বদলাবে)
+  Future<void> updateTx({
+    required int id,
+    required TxType type,
+    required int amountPaisa,
+    required int categoryId,
+    required DateTime date,
+    String note = '',
+  }) =>
+      db.update(
+        'transactions',
+        {'type': type.name, 'amount_paisa': amountPaisa, 'category_id': categoryId, 'note': note.trim(), 'date': dateKey(date)},
+        where: "id = ? AND source = 'manual'",
+        whereArgs: [id],
+      );
+
   Future<void> deleteTx(int id) => db.delete('transactions', where: 'id = ?', whereArgs: [id]);
 
   static const _txSelect = '''

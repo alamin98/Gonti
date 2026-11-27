@@ -30,10 +30,19 @@ jobs:
           if [ ! -d android ]; then
             flutter create --org com.gonti --project-name gonti --platforms android .
             rm -f test/widget_test.dart
-            sed -i 's/android:label="gonti"/android:label="গণতি"/' android/app/src/main/AndroidManifest.xml
           fi
 
       - run: flutter pub get
+
+      - name: App icon + native splash (from Figma logo)
+        run: |
+          dart run flutter_launcher_icons
+          dart run flutter_native_splash:create
+
+      - name: App name + release signing
+        env:
+          GONTI_KEYSTORE_B64: ${{ secrets.GONTI_KEYSTORE_B64 }}
+        run: python3 tool/ci_android_setup.py
 
       - name: Analyze
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
@@ -42,6 +51,8 @@ jobs:
         run: flutter test
 
       - name: Build APK
+        env:
+          GONTI_KEYSTORE_PASSWORD: ${{ secrets.GONTI_KEYSTORE_PASSWORD }}
         run: flutter build apk --release
 
       - uses: actions/upload-artifact@v4

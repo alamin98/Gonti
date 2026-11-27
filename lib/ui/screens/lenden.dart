@@ -8,6 +8,7 @@ import '../../data/models.dart';
 import '../../state/app_state.dart';
 import '../dialogs.dart';
 import '../widgets.dart';
+import 'quick_add.dart';
 
 class LendenScreen extends StatefulWidget {
   const LendenScreen({super.key});
@@ -102,19 +103,20 @@ class _LendenScreenState extends State<LendenScreen> {
   }
 
   Widget _row(Tx tx, bool last, AppState s) {
-    final row = TxRow(tx: tx, last: last);
+    // চাপ দিলে বদলানো/মোছার স্ক্রিন খোলে
+    final row = TxRow(tx: tx, last: last, onTap: () => openTxEditor(context, tx));
     if (!tx.isManual) {
       // দেনা/পাওনা/ডিপিএস থেকে আসা লেনদেন এখানে মোছা যাবে না (ডাবল গোনা ঠেকাতে)
-      return InkWell(
-        onLongPress: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t('delete_locked')))),
-        child: row,
-      );
+      return row;
     }
     return Dismissible(
       key: ValueKey('tx-${tx.id}'),
       direction: DismissDirection.endToStart,
       confirmDismiss: (_) => _confirmDelete(),
-      onDismissed: (_) => s.deleteTransaction(tx.id),
+      onDismissed: (_) {
+        s.deleteTransaction(tx.id);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t('deleted'))));
+      },
       background: Container(
         color: C.red100,
         alignment: Alignment.centerRight,

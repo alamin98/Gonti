@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import '../../core/strings.dart';
 import '../../core/theme.dart';
 import '../../core/tokens.dart';
+import '../motion.dart';
 import '../widgets.dart';
 
 void openSoon(BuildContext context, String title) {
-  Navigator.of(context).push(MaterialPageRoute(builder: (_) => ComingSoonScreen(title: title)));
+  Navigator.of(context).push(fadeRoute(ComingSoonScreen(title: title)));
 }
 
 /// যে মডিউল এখনো বানানো হয়নি, সেগুলোর জন্য সাময়িক পেজ।
@@ -21,7 +22,7 @@ class ComingSoonScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Column(children: [
             Row(children: [
-              RoundIconButton(icon: Icons.chevron_left_rounded, onTap: () => Navigator.pop(context)),
+              RoundIconButton(icon: 'left', onTap: () => Navigator.pop(context)),
               Expanded(child: Center(child: Text(title, style: Ty.s(19, FontWeight.w600)))),
               const SizedBox(width: 40),
             ]),

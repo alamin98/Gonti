@@ -5,6 +5,7 @@ import '../../core/theme.dart';
 import '../../core/tokens.dart';
 import '../../state/app_state.dart';
 import '../dialogs.dart';
+import '../motion.dart';
 import '../widgets.dart';
 import 'coming_soon.dart';
 import 'login.dart';
@@ -22,7 +23,7 @@ class MoreScreen extends StatelessWidget {
       (Icons.account_balance_rounded, C.primaryContainer, C.primaryStrong, t('dps_title'), t('dps_sub'), () => openSoon(context, t('dps_title'))),
       (Icons.account_balance_wallet_rounded, C.amber100, C.amber700, t('budget'), t('budget_sub'), () => showBudgetDialog(context)),
       (Icons.calculate_rounded, C.ink100, C.ink600, t('tools'), t('tools_sub'), () => openSoon(context, t('tools'))),
-      (Icons.shield_outlined, C.green100, const Color(0xFF047857), t('settings'), t('settings_sub'), () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const SettingsScreen()))),
+      (Icons.shield_outlined, C.green100, const Color(0xFF047857), t('settings'), t('settings_sub'), () => Navigator.of(context).push(fadeRoute(const SettingsScreen()))),
     ];
     return SafeArea(
       bottom: false,
@@ -45,7 +46,7 @@ class MoreScreen extends StatelessWidget {
               ),
               TextButton(
                 style: TextButton.styleFrom(backgroundColor: C.primary, shape: const StadiumBorder(), padding: const EdgeInsets.symmetric(horizontal: 16)),
-                onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LoginScreen(fromMore: true))),
+                onPressed: () => Navigator.of(context).push(fadeRoute(const LoginScreen(fromMore: true))),
                 child: Text(t('login'), style: Ty.s(14, FontWeight.w600, color: C.onPrimary)),
               ),
             ]),
