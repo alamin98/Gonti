@@ -92,7 +92,7 @@ jobs:
       - name: Generate web platform files
         run: |
           if [ ! -d web ]; then
-            flutter create --org com.gonti --project-name gonti --platforms web .
+            flutter create --org com.gonti --project-name gonti --platforms android,web .
             rm -f test/widget_test.dart
           fi
 
