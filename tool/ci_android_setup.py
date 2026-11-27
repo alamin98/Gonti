@@ -23,7 +23,16 @@ if not b64:
     print('No keystore secret: release build uses debug key')
     raise SystemExit(0)
 
-(app / 'gonti-release.jks').write_bytes(base64.b64decode(b64))
+clean = re.sub(r'[^A-Za-z0-9+/=]', '', b64).rstrip('=')
+print(f'keystore secret length: {len(b64)} chars (clean {len(clean)}), expected 3488')
+try:
+    data = base64.b64decode(clean + '=' * (-len(clean) % 4))
+    if data[:4] != bytes.fromhex('feedfeed'):
+        raise ValueError('not a JKS file')
+except Exception as e:
+    print(f'::warning::GONTI_KEYSTORE_B64 secret ঠিক নেই ({e}) — debug key দিয়ে build হচ্ছে')
+    raise SystemExit(0)
+(app / 'gonti-release.jks').write_bytes(data)
 kts = app / 'build.gradle.kts'
 groovy = app / 'build.gradle'
 if kts.exists():
