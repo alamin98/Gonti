@@ -22,20 +22,19 @@ class Shell extends StatelessWidget {
     return Scaffold(
       body: Stack(children: [
         for (var i = 0; i < pages.length; i++)
+          // আগে TickerMode বাইরে ছিল → ট্যাব বদলালে পুরনো পেজের fade-out অ্যানিমেশন থেমে যেত,
+          // পেজটা দেখা যেত আর নতুন পেজের সাথে overlap হতো। এখন TickerMode শুধু পেজের ভেতরে।
           IgnorePointer(
             ignoring: s.tab != i,
-            child: TickerMode(
-              enabled: s.tab == i,
-              child: AnimatedOpacity(
-                opacity: s.tab == i ? 1 : 0,
-                duration: const Duration(milliseconds: 220),
-                curve: Curves.easeOut,
-                child: AnimatedSlide(
-                  offset: s.tab == i ? Offset.zero : const Offset(0, 0.015),
-                  duration: const Duration(milliseconds: 260),
-                  curve: Curves.easeOutCubic,
-                  child: pages[i],
-                ),
+            child: AnimatedOpacity(
+              opacity: s.tab == i ? 1 : 0,
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              child: AnimatedSlide(
+                offset: s.tab == i ? Offset.zero : const Offset(0, 0.015),
+                duration: const Duration(milliseconds: 260),
+                curve: Curves.easeOutCubic,
+                child: TickerMode(enabled: s.tab == i, child: pages[i]),
               ),
             ),
           ),
