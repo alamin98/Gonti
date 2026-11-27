@@ -29,11 +29,12 @@ const _iosOptions = FirebaseOptions(
 
 /// Web (iPhone/কম্পিউটারের browser) — Firebase Console এর Web app config
 const _webOptions = FirebaseOptions(
-  apiKey: 'WEB_API_KEY',
-  appId: 'WEB_APP_ID',
+  apiKey: 'AIzaSyAxvmZnH9b8Yzh7yZcxpLrsQOR-afCXtMY',
+  appId: '1:783570563190:web:b786c5f11162826eecaf57',
   messagingSenderId: '783570563190',
   projectId: 'gonti01',
   authDomain: 'gonti01.firebaseapp.com',
+  measurementId: 'G-NBY6CRPJ43',
   storageBucket: 'gonti01.firebasestorage.app',
 );
 
