@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart';
+import 'db_factory.dart';
 
 /// SQLite ডাটাবেস। টাকা সবসময় পয়সায় (int) রাখা হয় যাতে দশমিক ভুল না হয়।
 /// সব মডিউলের টেবিল শুরুতেই আছে, তাই পরে নতুন মডিউল যোগ করতে migration লাগবে না।
@@ -9,9 +11,10 @@ class AppDb {
 
   static Future<Database> open() async {
     if (_db != null) return _db!;
-    final dir = await getDatabasesPath();
+    setupDbFactory();
+    final path = kIsWeb ? 'gonti.db' : p.join(await getDatabasesPath(), 'gonti.db');
     _db = await openDatabase(
-      p.join(dir, 'gonti.db'),
+      path,
       version: 1,
       onConfigure: (db) async => db.execute('PRAGMA foreign_keys = ON'),
       onCreate: _create,

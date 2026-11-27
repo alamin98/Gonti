@@ -1,4 +1,4 @@
-name: Build APK + iPhone
+name: Build APK + Web
 
 on:
   push:
@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   build:
@@ -28,7 +30,7 @@ jobs:
       - name: Generate Android platform files
         run: |
           if [ ! -d android ]; then
-            flutter create --org com.gonti --project-name gonti --platforms android,ios .
+            flutter create --org com.gonti --project-name gonti --platforms android,web .
             rm -f test/widget_test.dart
           fi
 
@@ -72,10 +74,13 @@ jobs:
           make_latest: true
           files: gonti.apk
 
-  # iPhone: GitHub এর Mac এ build, sign ছাড়া .ipa — Sideloadly দিয়ে নিজের Apple ID তে install
-  ios:
-    needs: build
-    runs-on: macos-latest
+  # Web app (iPhone/কম্পিউটার): https://alamin98.github.io/Gonti/
+  # iPhone এ Safari তে খুলে Share → Add to Home Screen
+  web:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
 
@@ -84,40 +89,30 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Generate iOS platform files
+      - name: Generate web platform files
         run: |
-          if [ ! -d ios ]; then
-            flutter create --org com.gonti --project-name gonti --platforms ios .
+          if [ ! -d web ]; then
+            flutter create --org com.gonti --project-name gonti --platforms web .
             rm -f test/widget_test.dart
           fi
 
       - run: flutter pub get
 
-      - name: App icon + native splash
-        run: |
-          dart run flutter_launcher_icons
-          dart run flutter_native_splash:create
+      - name: SQLite for browser (sqlite3.wasm + worker)
+        run: dart run sqflite_common_ffi_web:setup
 
-      - name: App name + Google login URL scheme + iOS 13
-        run: python3 tool/ci_ios_setup.py
+      - name: App icon
+        run: dart run flutter_launcher_icons
 
-      - name: Build iOS (no codesign)
-        run: flutter build ios --release --no-codesign
+      - name: PWA name, colors
+        run: python3 tool/ci_web_setup.py
 
-      - name: Package IPA
-        run: |
-          mkdir -p Payload
-          cp -R build/ios/iphoneos/Runner.app Payload/
-          zip -qr gonti.ipa Payload
+      - name: Build web
+        run: flutter build web --release --base-href /Gonti/
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-pages-artifact@v3
         with:
-          name: gonti-ipa
-          path: gonti.ipa
+          path: build/web
 
-      - uses: softprops/action-gh-release@v2
-        with:
-          tag_name: build-${{ github.run_number }}
-          name: Gonti build ${{ github.run_number }}
-          make_latest: true
-          files: gonti.ipa
+      - id: deploy
+        uses: actions/deploy-pages@v4

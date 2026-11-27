@@ -131,3 +131,30 @@ class DesignScale extends StatelessWidget {
     );
   }
 }
+
+/// কম্পিউটারের বড় browser এ অ্যাপটা মাঝখানে ফোনের মাপে দেখায় (ফোনে কিছু বদলায় না)।
+class PhoneFrame extends StatelessWidget {
+  const PhoneFrame({super.key, required this.child});
+  final Widget child;
+  static const maxWidth = 430.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    if (mq.size.width <= maxWidth + 40) return child;
+    return ColoredBox(
+      color: const Color(0xFFE9EEF8),
+      child: Center(
+        child: Container(
+          width: maxWidth,
+          height: mq.size.height,
+          clipBehavior: Clip.antiAlias,
+          decoration: const BoxDecoration(
+            boxShadow: [BoxShadow(color: Color(0x22000000), blurRadius: 30, offset: Offset(0, 8))],
+          ),
+          child: MediaQuery(data: mq.copyWith(size: Size(maxWidth, mq.size.height)), child: child),
+        ),
+      ),
+    );
+  }
+}

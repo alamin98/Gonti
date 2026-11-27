@@ -27,8 +27,18 @@ const _iosOptions = FirebaseOptions(
   iosBundleId: 'com.gonti.gonti',
 );
 
-bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
-FirebaseOptions get firebaseOptions => _isIOS ? _iosOptions : _androidOptions;
+/// Web (iPhone/কম্পিউটারের browser) — Firebase Console এর Web app config
+const _webOptions = FirebaseOptions(
+  apiKey: 'WEB_API_KEY',
+  appId: 'WEB_APP_ID',
+  messagingSenderId: '783570563190',
+  projectId: 'gonti01',
+  authDomain: 'gonti01.firebaseapp.com',
+  storageBucket: 'gonti01.firebasestorage.app',
+);
+
+bool get _isIOS => !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+FirebaseOptions get firebaseOptions => kIsWeb ? _webOptions : (_isIOS ? _iosOptions : _androidOptions);
 
 /// Web client (client_type 3) — Google লগইনে idToken পেতে লাগে।
 const _webClientId = '783570563190-tqc4e7hsbk8gkufe1c46vod3p2k2d778.apps.googleusercontent.com';
@@ -60,6 +70,11 @@ class Cloud {
   /// null = ইউজার বাতিল করেছে
   static Future<User?> signIn() async {
     if (!ready) throw Exception('Firebase not ready');
+    if (kIsWeb) {
+      // browser এ Google এর নিজের popup দিয়ে লগইন
+      final r = await FirebaseAuth.instance.signInWithPopup(GoogleAuthProvider()..addScope('email'));
+      return r.user;
+    }
     final acc = await _google.signIn();
     if (acc == null) return null;
     final auth = await acc.authentication;
@@ -69,9 +84,11 @@ class Cloud {
   }
 
   static Future<void> signOut() async {
-    try {
-      await _google.signOut();
-    } catch (_) {}
+    if (!kIsWeb) {
+      try {
+        await _google.signOut();
+      } catch (_) {}
+    }
     if (ready) await FirebaseAuth.instance.signOut();
   }
 

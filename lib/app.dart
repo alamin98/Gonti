@@ -23,7 +23,7 @@ class GontiApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      builder: (context, child) => DesignScale(child: child ?? const SizedBox()),
+      builder: (context, child) => PhoneFrame(child: DesignScale(child: child ?? const SizedBox())),
       home: const SplashScreen(),
     );
   }
