@@ -110,9 +110,13 @@ jobs:
       - name: Build web
         run: flutter build web --release --base-href /Gonti/
 
+      # re-run করলেও যেন একই নামের দুইটা artifact না হয়
       - uses: actions/upload-pages-artifact@v3
         with:
+          name: github-pages-${{ github.run_attempt }}
           path: build/web
 
       - id: deploy
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
