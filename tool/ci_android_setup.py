@@ -16,6 +16,10 @@ for g in (app / 'build.gradle.kts', app / 'build.gradle'):
     if g.exists():
         t = g.read_text()
         t = t.replace('minSdk = flutter.minSdkVersion', 'minSdk = 23').replace('minSdkVersion flutter.minSdkVersion', 'minSdkVersion 23')
+        # Android lint release build এ crash করছে (Firebase plugin এর Java doc) — release lint বন্ধ
+        lint = '    lint {\n        checkReleaseBuilds = false\n        abortOnError = false\n    }\n\n' if g.suffix == '.kts' else '    lintOptions {\n        checkReleaseBuilds false\n        abortOnError false\n    }\n\n'
+        if 'checkReleaseBuilds' not in t:
+            t = t.replace('    buildTypes {', lint + '    buildTypes {', 1)
         g.write_text(t)
 
 b64 = os.environ.get('GONTI_KEYSTORE_B64', '').strip()
