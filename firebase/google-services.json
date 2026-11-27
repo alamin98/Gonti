@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "783570563190",
+    "project_id": "gonti01",
+    "storage_bucket": "gonti01.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:783570563190:android:fc5f7aa7974bdd07ecaf57",
+        "android_client_info": {
+          "package_name": "com.gonti.gonti"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "783570563190-2v774lclq34m2aes79gunqbp7fko5os4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.gonti.gonti",
+            "certificate_hash": "bfe79482056ca136bb486f9b0ac08fe84d9333d9"
+          }
+        },
+        {
+          "client_id": "783570563190-tqc4e7hsbk8gkufe1c46vod3p2k2d778.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAyDQErRy-fuU1C1YdH1u_VXAO9pATfoJM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "783570563190-tqc4e7hsbk8gkufe1c46vod3p2k2d778.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

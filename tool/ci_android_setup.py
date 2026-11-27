@@ -11,6 +11,13 @@ m = manifest.read_text()
 m = re.sub(r'android:label="[^"]*"', 'android:label="গণতি"', m, count=1)
 manifest.write_text(m)
 
+# Firebase (auth, firestore) এর জন্য minSdk 23
+for g in (app / 'build.gradle.kts', app / 'build.gradle'):
+    if g.exists():
+        t = g.read_text()
+        t = t.replace('minSdk = flutter.minSdkVersion', 'minSdk = 23').replace('minSdkVersion flutter.minSdkVersion', 'minSdkVersion 23')
+        g.write_text(t)
+
 b64 = os.environ.get('GONTI_KEYSTORE_B64', '').strip()
 if not b64:
     print('No keystore secret: release build uses debug key')

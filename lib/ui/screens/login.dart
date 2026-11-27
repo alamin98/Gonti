@@ -10,7 +10,7 @@ import '../widgets.dart';
 import 'shell.dart';
 
 /// লগইন ঐচ্ছিক। ভাষা এখানেই বদলানো যায় (ডিফল্ট বাংলা)।
-/// Google লগইন + ক্লাউড ব্যাকআপ Phase 2 তে আসবে — এখন বাটন শুধু "শীঘ্রই আসছে" দেখায়।
+/// Google লগইন → ক্লাউডে ব্যাকআপ থাকলে কোনটা রাখবে জিজ্ঞেস করে, না থাকলে এখনই ব্যাকআপ নেয়।
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key, this.fromMore = false});
   final bool fromMore; // true হলে আরও ট্যাব থেকে খোলা হয়েছে → স্কিপে শুধু ফিরে যাবে
@@ -23,6 +23,48 @@ class LoginScreen extends StatelessWidget {
       Navigator.of(context).pop();
     } else {
       Navigator.of(context).pushAndRemoveUntil(fadeRoute(const Shell()), (r) => false);
+    }
+  }
+
+  Future<void> _google(BuildContext context) async {
+    final state = context.read<AppState>();
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final ok = await state.signIn();
+      if (!ok || !context.mounted) return;
+      final hasCloud = state.lastBackup != null;
+      final hasLocal = await state.hasLocalData();
+      if (hasCloud && !hasLocal) {
+        await state.restoreFromCloud();
+        messenger.showSnackBar(SnackBar(content: Text(t('restored'))));
+      } else if (hasCloud && hasLocal) {
+        if (!context.mounted) return;
+        final cloud = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(R.xl)),
+            title: Text(t('restore_title'), style: Ty.s(18, FontWeight.w600)),
+            content: Text(t('restore_body'), style: Ty.s(14, FontWeight.w400, color: C.ink600)),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(t('keep_phone'), style: Ty.s(14, FontWeight.w600, color: C.ink600))),
+              TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text(t('restore_cloud'), style: Ty.s(14, FontWeight.w600, color: C.primary))),
+            ],
+          ),
+        );
+        if (cloud == true) {
+          await state.restoreFromCloud();
+          messenger.showSnackBar(SnackBar(content: Text(t('restored'))));
+        } else {
+          await state.backupNow();
+        }
+      } else {
+        await state.backupNow();
+        messenger.showSnackBar(SnackBar(content: Text(t('logged_in'))));
+      }
+      if (context.mounted) await _skip(context);
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(t('login_failed'))));
     }
   }
 
@@ -94,7 +136,7 @@ class LoginScreen extends StatelessWidget {
                         decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                         child: Text('G', style: Ty.s(20, FontWeight.w700, color: C.primary).copyWith(height: 1.1)),
                       ),
-                      onPressed: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(t('soon')))),
+                      onPressed: s.syncing ? null : () => _google(context),
                     ),
                   ),
                 ]),
