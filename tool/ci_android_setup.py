@@ -27,8 +27,9 @@ clean = re.sub(r'[^A-Za-z0-9+/=]', '', b64).rstrip('=')
 print(f'keystore secret length: {len(b64)} chars (clean {len(clean)}), expected 3488')
 try:
     data = base64.b64decode(clean + '=' * (-len(clean) % 4))
-    if data[:4] != bytes.fromhex('feedfeed'):
-        raise ValueError('not a JKS file')
+    # JKS (feedfeed) বা PKCS12 (ASN.1 sequence 0x30 0x82)
+    if data[:4] != bytes.fromhex('feedfeed') and data[:2] != bytes.fromhex('3082'):
+        raise ValueError('not a keystore file')
 except Exception as e:
     print(f'::warning::GONTI_KEYSTORE_B64 secret ঠিক নেই ({e}) — debug key দিয়ে build হচ্ছে')
     raise SystemExit(0)

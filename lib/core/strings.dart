@@ -100,7 +100,6 @@ const Map<String, List<String>> _s = {
   'categories': ['ক্যাটাগরি', 'Categories'],
   'language': ['ভাষা', 'Language'],
   'pin_lock': ['PIN লক', 'PIN lock'],
-  'backup_now': ['ব্যাকআপ করুন', 'Back up'],
   'restore': ['রিস্টোর করুন', 'Restore'],
   'login_needed': ['লগইন লাগবে', 'Login required'],
   'not_set': ['ঠিক করা হয়নি', 'Not set'],
