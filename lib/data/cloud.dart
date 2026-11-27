@@ -1,18 +1,34 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sqflite/sqflite.dart';
 
-/// Firebase প্রজেক্ট gonti01 (google-services.json থেকে)।
+/// Firebase প্রজেক্ট gonti01 (google-services.json / GoogleService-Info.plist থেকে)।
 /// এগুলো গোপন নয় — অ্যাপের ভেতরেই থাকে। ডেটার নিরাপত্তা আসে Firestore rules থেকে।
-const firebaseOptions = FirebaseOptions(
+const _androidOptions = FirebaseOptions(
   apiKey: 'AIzaSyAyDQErRy-fuU1C1YdH1u_VXAO9pATfoJM',
   appId: '1:783570563190:android:fc5f7aa7974bdd07ecaf57',
   messagingSenderId: '783570563190',
   projectId: 'gonti01',
   storageBucket: 'gonti01.firebasestorage.app',
 );
+
+/// iPhone (GoogleService-Info.plist থেকে)
+const _iosClientId = '783570563190-12qtqprjbcb0d5apcbfkc0hovaa2g5ae.apps.googleusercontent.com';
+const _iosOptions = FirebaseOptions(
+  apiKey: 'AIzaSyAJH7u_V1vOqvvm0lMR2aqI-1VjqP3KHYA',
+  appId: '1:783570563190:ios:952d33e18b6bb82becaf57',
+  messagingSenderId: '783570563190',
+  projectId: 'gonti01',
+  storageBucket: 'gonti01.firebasestorage.app',
+  iosClientId: _iosClientId,
+  iosBundleId: 'com.gonti.gonti',
+);
+
+bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
+FirebaseOptions get firebaseOptions => _isIOS ? _iosOptions : _androidOptions;
 
 /// Web client (client_type 3) — Google লগইনে idToken পেতে লাগে।
 const _webClientId = '783570563190-tqc4e7hsbk8gkufe1c46vod3p2k2d778.apps.googleusercontent.com';
@@ -34,7 +50,11 @@ class Cloud {
     }
   }
 
-  static final _google = GoogleSignIn(serverClientId: _webClientId, scopes: const ['email']);
+  static final _google = GoogleSignIn(
+    clientId: _isIOS ? _iosClientId : null,
+    serverClientId: _webClientId,
+    scopes: const ['email'],
+  );
   static User? get user => ready ? FirebaseAuth.instance.currentUser : null;
 
   /// null = ইউজার বাতিল করেছে

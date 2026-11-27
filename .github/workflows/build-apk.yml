@@ -1,4 +1,4 @@
-name: Build APK
+name: Build APK + iPhone
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
       - name: Generate Android platform files
         run: |
           if [ ! -d android ]; then
-            flutter create --org com.gonti --project-name gonti --platforms android .
+            flutter create --org com.gonti --project-name gonti --platforms android,ios .
             rm -f test/widget_test.dart
           fi
 
@@ -71,3 +71,53 @@ jobs:
           body: "Auto build from commit ${{ github.sha }}"
           make_latest: true
           files: gonti.apk
+
+  # iPhone: GitHub এর Mac এ build, sign ছাড়া .ipa — Sideloadly দিয়ে নিজের Apple ID তে install
+  ios:
+    needs: build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Generate iOS platform files
+        run: |
+          if [ ! -d ios ]; then
+            flutter create --org com.gonti --project-name gonti --platforms ios .
+            rm -f test/widget_test.dart
+          fi
+
+      - run: flutter pub get
+
+      - name: App icon + native splash
+        run: |
+          dart run flutter_launcher_icons
+          dart run flutter_native_splash:create
+
+      - name: App name + Google login URL scheme + iOS 13
+        run: python3 tool/ci_ios_setup.py
+
+      - name: Build iOS (no codesign)
+        run: flutter build ios --release --no-codesign
+
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -R build/ios/iphoneos/Runner.app Payload/
+          zip -qr gonti.ipa Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gonti-ipa
+          path: gonti.ipa
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Gonti build ${{ github.run_number }}
+          make_latest: true
+          files: gonti.ipa
