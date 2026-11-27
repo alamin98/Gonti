@@ -1,0 +1,29 @@
+name: gonti
+description: "গণতি — সহজ দৈনন্দিন হিসাব রাখার অ্যাপ (আয়, খরচ, দেনা-পাওনা, সঞ্চয়, বাজেট)"
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  provider: ^6.1.2
+  sqflite: ^2.3.3+1
+  path: ^1.9.0
+  shared_preferences: ^2.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  fonts:
+    - family: BalooDa2
+      fonts:
+        - asset: assets/fonts/BalooDa2.ttf
